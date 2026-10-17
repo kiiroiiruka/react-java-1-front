@@ -4,8 +4,9 @@ import Stepper from '../components/Stepper';
 import AccessRestrictions from '../components/setting/AccessRestrictions';
 import InputWebLink from '../components/setting/InputWebLink';
 import WhoToSendItTo from '../components/setting/WhoToSendItTo';
-
-// 各ステップのURL。nextPath にはここの値だけを使う
+import { createShare } from '@/api/shares';
+import {request} from '@/api/client';
+// 各ステップのURL。nextPath にはこの値だけを使う
 const PATHS = {
   link: '/',
   sendTo: '/send-to',
@@ -14,7 +15,6 @@ const PATHS = {
 
 const SettingPages = () => {
   const { pathname } = useLocation();
-
   // 全ステップの入力値をここでまとめて持つ（ページを戻っても消えない）
   const [form, setForm] = useState({
     link: { url: '', title: '' },
