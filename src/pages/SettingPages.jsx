@@ -5,6 +5,7 @@ import AccessRestrictions from '../components/setting/AccessRestrictions';
 import InputWebLink from '../components/setting/InputWebLink';
 import WhoToSendItTo from '../components/setting/WhoToSendItTo';
 import { createShare } from '@/api/shares';
+import { useAuth } from '@/auth/AuthContext';
 import {request} from '@/api/client';
 // 各ステップのURL。nextPath にはこの値だけを使う
 const PATHS = {
@@ -15,6 +16,7 @@ const PATHS = {
 
 const SettingPages = () => {
   const { pathname } = useLocation();
+  const auth = useAuth();
   // 全ステップの入力値をここでまとめて持つ（ページを戻っても消えない）
   const [form, setForm] = useState({
     link: { url: '', title: '' },
@@ -65,6 +67,16 @@ const SettingPages = () => {
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col gap-8 p-4 pt-12">
+      <div className="flex items-center justify-end gap-3 text-sm">
+        <span className="truncate text-gray-500">{auth.email}</span>
+        <button
+          type="button"
+          onClick={auth.logout}
+          className="shrink-0 font-bold text-blue-600 hover:underline"
+        >
+          ログアウト
+        </button>
+      </div>
       <Stepper steps={steps} current={currentStep} />
       <Routes>
         {steps.map((step) => (

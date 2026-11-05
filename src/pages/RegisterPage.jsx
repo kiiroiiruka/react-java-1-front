@@ -1,5 +1,6 @@
 //メールアドレスとパスワードで新規登録するページ描画
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { register } from '@/api/auth';
 import FormField from '@/components/setting/FormField';
 
@@ -57,14 +58,28 @@ const RegisterPage = () => {
     }
   };
 
+  // 送信できたら「メールを開いてください」画面に切り替える
   if (registeredEmail) {
     return (
       <div className="mx-auto w-full max-w-md p-4 pt-12">
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-bold">登録が完了しました</h2>
-          <p className="mt-2 text-sm text-gray-500">
-            {registeredEmail} で登録しました。
+          <h2 className="text-lg font-bold">確認メールを送信しました</h2>
+          <p className="mt-2 text-sm text-gray-700">
+            <span className="font-bold break-all">{registeredEmail}</span>{' '}
+            宛にメールを送りました。メール内のリンクを開いて、登録を完了してください。
           </p>
+          <p className="mt-4 text-sm text-gray-500">
+            メールが届かない場合は、迷惑メールフォルダも確認してください。
+          </p>
+          <div className="mt-8 flex justify-end">
+            <button
+              type="button"
+              onClick={() => setRegisteredEmail('')}
+              className="text-sm font-bold text-blue-600 hover:underline"
+            >
+              メールアドレスを間違えた場合はこちら
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -116,7 +131,13 @@ const RegisterPage = () => {
           </p>
         )}
 
-        <div className="mt-8 flex justify-end">
+        <div className="mt-8 flex items-center justify-between">
+          <Link
+            to="/login"
+            className="text-sm font-bold text-blue-600 hover:underline"
+          >
+            ログインはこちら
+          </Link>
           <button
             type="submit"
             disabled={submitting || values.email.trim() === ''}

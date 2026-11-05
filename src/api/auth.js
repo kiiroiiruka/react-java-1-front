@@ -3,3 +3,13 @@ import { request } from './client';
 
 export const register = (form) =>
   request('/api/auth/register', { method: 'POST', body: JSON.stringify(form) });
+
+export const login = (form) =>
+  request('/api/auth/login', { method: 'POST', body: JSON.stringify(form) });
+
+// メール内リンクのトークンを送って、メールアドレスを確認済みにする
+export const verifyEmail = (token) =>
+  request('/api/auth/verify', {
+    method: 'POST',
+    body: JSON.stringify({ token }),
+  });
