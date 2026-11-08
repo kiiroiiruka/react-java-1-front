@@ -1,0 +1,13 @@
+// Cloudflare に「どうやって公開するか」を伝える設定ファイル（npx wrangler deploy が読む）
+{
+  // Cloudflare のプロジェクト名（ダッシュボードで入力した名前と同じにする）
+  "name": "react-java-1-front",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    // npm run build で作られたファイルの置き場所
+    "directory": "./dist",
+    // /verify や /register のように、ファイルが存在しないURLでは index.html を返す
+    // （あとは React Router が URL を見て画面を選ぶ）
+    "not_found_handling": "single-page-application"
+  }
+}
