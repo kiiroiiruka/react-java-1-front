@@ -1,38 +1,28 @@
 // ログイン中のユーザーをアプリ全体で共有する
-// ※バックエンドにセッションができるまでの仮の仕組み。ブラウザのタブを閉じるとログアウト状態に戻る
+// ログイン時にバックエンドから受け取ったJWTを保存し、client.js がAPIを呼ぶときに使う
 import { createContext, useContext, useState } from 'react';
+import { clearAuth, loadAuth, saveAuth } from './storage';
 
-const STORAGE_KEY = 'loginEmail';
 const AuthContext = createContext(null);
 
-// sessionStorage は使えない環境（プライベートモードなど）もあるので try で囲む
-const readStoredEmail = () => {
-  try {
-    return sessionStorage.getItem(STORAGE_KEY);
-  } catch {
-    return null;
-  }
-};
-
 export const AuthProvider = ({ children }) => {
-  const [email, setEmail] = useState(readStoredEmail);
+  // { email, token } または null（未ログイン）
+  const [auth, setAuth] = useState(loadAuth);
 
-  const login = (loginEmail) => {
-    setEmail(loginEmail);
-    try {
-      sessionStorage.setItem(STORAGE_KEY, loginEmail);
-    } catch {}
+  const login = (email, token) => {
+    const next = { email, token };
+    setAuth(next);
+    saveAuth(next);
   };
 
+  // JWTはサーバーが何も覚えていないので、ブラウザから捨てるだけでログアウトになる
   const logout = () => {
-    setEmail(null);
-    try {
-      sessionStorage.removeItem(STORAGE_KEY);
-    } catch {}
+    setAuth(null);
+    clearAuth();
   };
 
   return (
-    <AuthContext.Provider value={{ email, login, logout }}>
+    <AuthContext.Provider value={{ email: auth?.email ?? null, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

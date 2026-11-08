@@ -33,7 +33,8 @@ const LoginPage = () => {
         email: values.email.trim(),
         password: values.password,
       });
-      auth.login(result.email);
+      // バックエンドが発行したJWT（result.token）を保存する
+      auth.login(result.email, result.token);
       navigate('/', { replace: true });
     } catch (err) {
       setError(
@@ -107,7 +108,7 @@ const LoginPage = () => {
         <button
           type="button"
           onClick={() => {
-            auth.login('dev@example.com');
+            auth.login('dev@example.com', null);
             navigate('/');
           }}
           className="mt-4 w-full rounded-lg border border-dashed border-gray-400 py-2 text-sm text-gray-500 hover:bg-gray-50"

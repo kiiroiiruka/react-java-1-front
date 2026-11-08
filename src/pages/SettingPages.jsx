@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import Stepper from '../components/Stepper';
 import AccessRestrictions from '../components/setting/AccessRestrictions';
 import InputWebLink from '../components/setting/InputWebLink';
 import WhoToSendItTo from '../components/setting/WhoToSendItTo';
+import { fetchMe } from '@/api/auth';
 import { createShare } from '@/api/shares';
 import { useAuth } from '@/auth/AuthContext';
 import {request} from '@/api/client';
@@ -17,6 +18,15 @@ const PATHS = {
 const SettingPages = () => {
   const { pathname } = useLocation();
   const auth = useAuth();
+  // サーバーから受け取った「ログイン中のユーザー」（GET /api/me）
+  const [me, setMe] = useState(null);
+  useEffect(() => {
+    // 保存しているJWTがまだ有効かをサーバーに確かめる
+    // 期限切れなら 401 になり、client.js がログイン画面へ移動させる
+    fetchMe()
+      .then(setMe)
+      .catch(() => {});
+  }, []);
   // 全ステップの入力値をここでまとめて持つ（ページを戻っても消えない）
   const [form, setForm] = useState({
     link: { url: '', title: '' },
@@ -68,7 +78,7 @@ const SettingPages = () => {
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col gap-8 p-4 pt-12">
       <div className="flex items-center justify-end gap-3 text-sm">
-        <span className="truncate text-gray-500">{auth.email}</span>
+        <span className="truncate text-gray-500">{me?.email ?? auth.email}</span>
         <button
           type="button"
           onClick={auth.logout}
