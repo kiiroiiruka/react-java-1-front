@@ -1,5 +1,7 @@
 // api/client.js
-const BASE_URL = 'http://localhost:8080';
+// 開発中（npm run dev）は .env.development の VITE_API_URL（http://localhost:8080）を使う
+// 本番はSpring Bootと同じサーバーから配信されるので、空文字（= 同じURL）でよい
+const BASE_URL = import.meta.env.VITE_API_URL ?? '';
 
 export async function request(path, options = {}) {
   const res = await fetch(`${BASE_URL}${path}`, {
