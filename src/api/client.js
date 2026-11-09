@@ -31,5 +31,7 @@ export async function request(path, { auth = true, ...options } = {}) {
     error.status = res.status; // 呼び出し側で 409 などを見分けられるようにする
     throw error;
   }
+  // 204 No Content（削除の成功など）は中身がないので、JSONとして読まない
+  if (res.status === 204) return null;
   return res.json();
 }
