@@ -52,15 +52,18 @@ const HomePage = () => {
     <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col gap-6 p-4 pt-12">
       <AppHeader />
 
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="text-xl font-bold">登録したサイト</h1>
-        <Link
-          to="/new"
-          className="shrink-0 rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-blue-700"
-        >
-          ＋ 新しいサイトを追加
-        </Link>
-      </div>
+      {/* 追加ボタンは、1件以上あると分かってから出す（0件ならこのあと登録画面へ移動するため） */}
+      {shares?.length > 0 && (
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-xl font-bold">登録したサイト</h1>
+          <Link
+            to="/new"
+            className="shrink-0 rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-blue-700"
+          >
+            ＋ 新しいサイトを追加
+          </Link>
+        </div>
+      )}
 
       {created && (
         <div className="rounded-lg bg-green-50 p-3 text-sm text-green-700">

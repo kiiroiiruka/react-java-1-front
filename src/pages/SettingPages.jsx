@@ -18,11 +18,16 @@ import InputWebLink from '../components/setting/InputWebLink';
 import WhoToSendItTo from '../components/setting/WhoToSendItTo';
 
 // 各ステップのURL。nextPath にはこの値だけを使う
+const BASE_PATH = '/new';
 const PATHS = {
-  link: '/new',
-  sendTo: '/new/send-to',
-  access: '/new/access',
+  link: BASE_PATH,
+  sendTo: `${BASE_PATH}/send-to`,
+  access: `${BASE_PATH}/access`,
 };
+
+// <Routes> の中では、App.jsx の "/new/*" より後ろの部分だけで判定される
+// そのため Route には "/new/send-to" ではなく "send-to"（"/new" は ""）のように書く
+const toRoutePath = (path) => path.slice(BASE_PATH.length).replace(/^\//, '');
 
 // 入力欄の初期値
 const EMPTY_FORM = {
@@ -141,7 +146,11 @@ const SettingPages = () => {
       <Stepper steps={steps} current={currentStep} />
       <Routes>
         {steps.map((step) => (
-          <Route key={step.path} path={step.path} element={step.element} />
+          <Route
+            key={step.path}
+            path={toRoutePath(step.path)}
+            element={step.element}
+          />
         ))}
         <Route path="*" element={<Navigate to={PATHS.link} replace />} />
       </Routes>
