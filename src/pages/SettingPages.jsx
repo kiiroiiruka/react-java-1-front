@@ -1,4 +1,4 @@
-// 新しいサイト（共有リンク）を登録する3ステップの画面（/new）
+// 新しいサイト（共有リンク）を登録する2ステップの画面（/new）
 // 「完了」で保存したら、ホーム（/ の一覧）に戻る
 import { useEffect, useState } from 'react';
 import {
@@ -15,24 +15,21 @@ import { DEFAULT_TIME_ZONE } from '@/constants/timeZones';
 import Stepper from '../components/Stepper';
 import AccessRestrictions from '../components/setting/AccessRestrictions';
 import InputWebLink from '../components/setting/InputWebLink';
-import WhoToSendItTo from '../components/setting/WhoToSendItTo';
 
 // 各ステップのURL。nextPath にはこの値だけを使う
 const BASE_PATH = '/new';
 const PATHS = {
   link: BASE_PATH,
-  sendTo: `${BASE_PATH}/send-to`,
   access: `${BASE_PATH}/access`,
 };
 
 // <Routes> の中では、App.jsx の "/new/*" より後ろの部分だけで判定される
-// そのため Route には "/new/send-to" ではなく "send-to"（"/new" は ""）のように書く
+// そのため Route には "/new/access" ではなく "access"（"/new" は ""）のように書く
 const toRoutePath = (path) => path.slice(BASE_PATH.length).replace(/^\//, '');
 
 // 入力欄の初期値
 const EMPTY_FORM = {
   link: { url: '', title: '' },
-  sendTo: { name: '', email: '', message: '' },
   access: { password: '', expiresAt: '', timeZone: DEFAULT_TIME_ZONE },
 };
 
@@ -56,7 +53,7 @@ const SettingPages = () => {
       .catch(() => {});
   }, []);
 
-  // 「完了」ボタン：3ステップ分の入力をまとめて POST /api/shares に送る
+  // 「完了」ボタン：2ステップ分の入力をまとめて POST /api/shares に送る
   // JWTは client.js が自動でつけるので、サーバーは「誰が作ったか」が分かる
   const handleComplete = async () => {
     setSubmitting(true);
@@ -65,9 +62,6 @@ const SettingPages = () => {
       const share = await createShare({
         url: form.link.url.trim(),
         title: form.link.title.trim(),
-        recipientName: form.sendTo.name.trim(),
-        recipientEmail: form.sendTo.email.trim(),
-        message: form.sendTo.message,
         password: form.access.password,
         expiresAt: form.access.expiresAt, // "2026-12-31" の形
         timeZone: form.access.timeZone, // "Asia/Tokyo" など
@@ -92,17 +86,6 @@ const SettingPages = () => {
         <InputWebLink
           values={form.link}
           onChange={updateSection('link')}
-          nextPath={PATHS.sendTo}
-        />
-      ),
-    },
-    {
-      label: '送信先',
-      path: PATHS.sendTo,
-      element: (
-        <WhoToSendItTo
-          values={form.sendTo}
-          onChange={updateSection('sendTo')}
           nextPath={PATHS.access}
         />
       ),

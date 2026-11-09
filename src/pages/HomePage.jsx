@@ -139,9 +139,6 @@ const HomePage = () => {
                 <span className="rounded-full bg-gray-100 px-2 py-0.5 text-gray-600">
                   {share.embeddable ? 'ページ内に表示' : 'サイトへ移動'}
                 </span>
-                <span className="rounded-full bg-gray-100 px-2 py-0.5 text-gray-600">
-                  宛先：{share.recipientName}
-                </span>
               </div>
 
               <div className="mt-3 flex gap-2">
