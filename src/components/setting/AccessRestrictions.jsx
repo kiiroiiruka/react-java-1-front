@@ -2,7 +2,8 @@
 import FormField from './FormField';
 import StepCard, { isFilled } from './StepCard';
 
-const AccessRestrictions = ({ values, onChange, nextPath }) => {
+// 最後のステップ。「完了」で onSubmit（SettingPages の保存処理）が呼ばれる
+const AccessRestrictions = ({ values, onChange, onSubmit, submitting }) => {
   const handleChange = (e) =>
     onChange({ ...values, [e.target.name]: e.target.value });
 
@@ -11,8 +12,9 @@ const AccessRestrictions = ({ values, onChange, nextPath }) => {
       title="アクセス制限"
       description="リンクを開くためのパスワードと有効期限を設定してください。"
       canNext={isFilled(values)}
-      nextPath={nextPath}
       nextLabel="完了"
+      onSubmit={onSubmit}
+      submitting={submitting}
     >
       <FormField
         label="パスワード"

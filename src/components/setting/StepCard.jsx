@@ -5,19 +5,24 @@ export const isFilled = (values) =>
   Object.values(values).every((value) => value.trim() !== '');
 
 // 各ステップ共通のカードUI。canNext が true のときだけ nextPath へ進める
+// onSubmit を渡したとき（最後のステップ）は、ページ移動の代わりに onSubmit を呼ぶ
 const StepCard = ({
   title,
   description,
   canNext,
   nextPath,
   nextLabel = '次へ',
+  onSubmit,
+  submitting = false,
   children,
 }) => {
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (canNext) navigate(nextPath);
+    if (!canNext || submitting) return;
+    if (onSubmit) onSubmit();
+    else navigate(nextPath);
   };
 
   return (
@@ -35,10 +40,10 @@ const StepCard = ({
       <div className="mt-8 flex justify-end">
         <button
           type="submit"
-          disabled={!canNext}
+          disabled={!canNext || submitting}
           className="rounded-lg bg-blue-600 px-6 py-2 text-sm font-bold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-300"
         >
-          {nextLabel}
+          {submitting ? '保存中…' : nextLabel}
         </button>
       </div>
     </form>
