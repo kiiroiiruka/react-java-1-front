@@ -9,6 +9,7 @@ import {
 import { fetchMe } from '@/api/auth';
 import { createShare } from '@/api/shares';
 import { useAuth } from '@/auth/AuthContext';
+import { DEFAULT_TIME_ZONE, timeZoneLabel } from '@/constants/timeZones';
 import Stepper from '../components/Stepper';
 import AccessRestrictions from '../components/setting/AccessRestrictions';
 import InputWebLink from '../components/setting/InputWebLink';
@@ -25,7 +26,7 @@ const PATHS = {
 const EMPTY_FORM = {
   link: { url: '', title: '' },
   sendTo: { name: '', email: '', message: '' },
-  access: { password: '', expiresAt: '' },
+  access: { password: '', expiresAt: '', timeZone: DEFAULT_TIME_ZONE },
 };
 
 const SettingPages = () => {
@@ -47,13 +48,23 @@ const SettingPages = () => {
 
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
-  const [notice, setNotice] = useState(null); // { type: 'success' | 'error', text }
+  // { type: 'success' | 'error', text, shareUrl? }
+  const [notice, setNotice] = useState(null);
+  const [copied, setCopied] = useState(false);
+
+  const copyShareUrl = async () => {
+    try {
+      await navigator.clipboard.writeText(notice.shareUrl);
+      setCopied(true);
+    } catch {}
+  };
 
   // 「完了」ボタン：3ステップ分の入力をまとめて POST /api/shares に送る
   // JWTは client.js が自動でつけるので、サーバーは「誰が作ったか」が分かる
   const handleComplete = async () => {
     setSubmitting(true);
     setNotice(null);
+    setCopied(false);
     try {
       const share = await createShare({
         url: form.link.url.trim(),
@@ -63,10 +74,13 @@ const SettingPages = () => {
         message: form.sendTo.message,
         password: form.access.password,
         expiresAt: form.access.expiresAt, // "2026-12-31" の形
+        timeZone: form.access.timeZone, // "Asia/Tokyo" など
       });
       setNotice({
         type: 'success',
-        text: `「${share.title}」を保存しました（有効期限：${share.expiresAt}）`,
+        text: `「${share.title}」を保存しました（有効期限：${share.expiresAt}・${timeZoneLabel(share.timeZone)}）`,
+        // 相手に送る共有URL。今開いているサイト（Cloudflare）のURLに /s/<slug> をつける
+        shareUrl: `${window.location.origin}/s/${share.slug}`,
       });
       setForm(EMPTY_FORM);
       navigate(PATHS.link);
@@ -75,7 +89,7 @@ const SettingPages = () => {
         type: 'error',
         text:
           err.status === 400
-            ? '入力内容を確認してください（URLは http:// か https:// で始まるもの、パスワードは4文字以上、有効期限は今日以降）。'
+            ? '入力内容を確認してください（URLは http:// か https:// で始まるもの、パスワードは4文字以上、有効期限は選んだ国の今日以降）。'
             : '保存に失敗しました。時間をおいてもう一度試してください。',
       });
     } finally {
@@ -138,15 +152,32 @@ const SettingPages = () => {
         </button>
       </div>
       {notice && (
-        <p
+        <div
           className={`rounded-lg p-3 text-sm ${
             notice.type === 'success'
               ? 'bg-green-50 text-green-700'
               : 'bg-red-50 text-red-700'
           }`}
         >
-          {notice.text}
-        </p>
+          <p>{notice.text}</p>
+          {notice.shareUrl && (
+            <div className="mt-2 flex gap-2">
+              <input
+                readOnly
+                value={notice.shareUrl}
+                onFocus={(e) => e.target.select()}
+                className="min-w-0 flex-1 rounded border border-green-200 bg-white p-1 text-gray-700"
+              />
+              <button
+                type="button"
+                onClick={copyShareUrl}
+                className="shrink-0 rounded bg-green-600 px-3 py-1 font-bold text-white hover:bg-green-700"
+              >
+                {copied ? 'コピーしました' : 'コピー'}
+              </button>
+            </div>
+          )}
+        </div>
       )}
       <Stepper steps={steps} current={currentStep} />
       <Routes>
