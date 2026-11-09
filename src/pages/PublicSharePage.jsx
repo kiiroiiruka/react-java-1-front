@@ -1,5 +1,7 @@
 // 共有リンク（/s/:slug）を受け取った人が開くページ
-// パスワードが合って、有効期限内なら、共有されたWebサイトに移動する
+// パスワードが合って、有効期限内なら、共有されたWebサイトを表示する
+//   埋め込めるサイト：このページの中に iframe で表示し、期限が来たら消す
+//   埋め込めないサイト：そのサイトへ移動する
 import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getPublicShare, openShare } from '@/api/publicShares';
@@ -15,9 +17,10 @@ const ERROR_MESSAGES = {
 
 const PublicSharePage = () => {
   const { slug } = useParams();
-  // 'loading'（確認中） / 'ready'（パスワード入力） / 'unavailable'（開けない）
+  // 'loading'（確認中） / 'ready'（パスワード入力） / 'viewing'（埋め込み表示中） / 'unavailable'（開けない）
   const [status, setStatus] = useState('loading');
   const [share, setShare] = useState(null); // { expiresAt, timeZone }
+  const [opened, setOpened] = useState(null); // { embedUrl, title, closesAt }
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -42,13 +45,33 @@ const PublicSharePage = () => {
       });
   }, [slug]);
 
+  // 埋め込み表示中は、期限の瞬間（closesAt）を過ぎたら iframe を消す
+  // （ページを開きっぱなしでも見られなくなるように、10秒ごとに時計を確認する）
+  useEffect(() => {
+    if (status !== 'viewing') return;
+    const closesAt = new Date(opened.closesAt).getTime();
+    const timer = setInterval(() => {
+      if (Date.now() >= closesAt) {
+        setOpened(null);
+        setError(ERROR_MESSAGES[410]);
+        setStatus('unavailable');
+      }
+    }, 10_000);
+    return () => clearInterval(timer);
+  }, [status, opened]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSubmitting(true);
     try {
       const result = await openShare(slug, password);
-      // 共有されたWebサイトに移動する（URLはサーバー側で http/https のみ許可している）
+      if (result.embedUrl) {
+        setOpened(result);
+        setStatus('viewing');
+        return;
+      }
+      // 埋め込めないサイトは、そのサイトへ移動する（URLはサーバー側で http/https のみ許可している）
       window.location.assign(result.url);
     } catch (err) {
       setError(
@@ -60,6 +83,29 @@ const PublicSharePage = () => {
       setSubmitting(false);
     }
   };
+
+  if (status === 'viewing') {
+    return (
+      <div className="mx-auto flex h-screen w-full max-w-5xl flex-col gap-2 p-4">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="text-lg font-bold">{opened.title}</h2>
+          <p className="text-sm text-gray-500">
+            {share.expiresAt}（{timeZoneLabel(share.timeZone)}
+            ）の終わりまで閲覧できます
+          </p>
+        </div>
+        {/* sandbox：埋め込んだサイトに許すことを絞る（このページ自体を別のURLに書き換える、などはさせない） */}
+        <iframe
+          src={opened.embedUrl}
+          title={opened.title}
+          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
+          allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+          allowFullScreen
+          className="w-full flex-1 rounded-xl border border-gray-200 bg-white"
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto w-full max-w-md p-4 pt-12">

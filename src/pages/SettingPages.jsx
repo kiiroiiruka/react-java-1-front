@@ -78,7 +78,11 @@ const SettingPages = () => {
       });
       setNotice({
         type: 'success',
-        text: `「${share.title}」を保存しました（有効期限：${share.expiresAt}・${timeZoneLabel(share.timeZone)}）`,
+        text:
+          `「${share.title}」を保存しました（有効期限：${share.expiresAt}・${timeZoneLabel(share.timeZone)}）` +
+          (share.embeddable
+            ? ''
+            : '\n※このサイトは埋め込み表示が禁止されているため、相手はパスワード入力後にサイトへ移動します（期限が過ぎても、サイトのURLを知っていれば開けます）。'),
         // 相手に送る共有URL。今開いているサイト（Cloudflare）のURLに /s/<slug> をつける
         shareUrl: `${window.location.origin}/s/${share.slug}`,
       });
@@ -159,7 +163,7 @@ const SettingPages = () => {
               : 'bg-red-50 text-red-700'
           }`}
         >
-          <p>{notice.text}</p>
+          <p className="whitespace-pre-line">{notice.text}</p>
           {notice.shareUrl && (
             <div className="mt-2 flex gap-2">
               <input
