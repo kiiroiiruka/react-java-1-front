@@ -10,7 +10,9 @@ import {
   useNavigate,
 } from 'react-router-dom';
 import { createShare, listShares } from '@/api/shares';
-import AppHeader from '@/components/AppHeader';
+import AppShell from '@/components/AppShell';
+import Alert from '@/components/ui/Alert';
+import { buttonClass } from '@/components/ui/Button';
 import { DEFAULT_TIME_ZONE } from '@/constants/timeZones';
 import Stepper from '../components/Stepper';
 import AccessRestrictions from '../components/setting/AccessRestrictions';
@@ -108,24 +110,14 @@ const SettingPages = () => {
   const currentStep = steps.findIndex((step) => step.path === pathname);
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col gap-8 p-4 pt-12">
-      <AppHeader />
+    <AppShell>
       {hasShares && (
-        <Link
-          to="/"
-          className="self-start text-sm font-bold text-blue-600 hover:underline"
-        >
+        <Link to="/" className={`self-start ${buttonClass('link')}`}>
           ← 一覧に戻る
         </Link>
       )}
-      {error && (
-        <p
-          role="alert"
-          className="rounded-lg bg-red-50 p-3 text-sm text-red-700"
-        >
-          {error}
-        </p>
-      )}
+      <h1 className="text-2xl font-bold text-ink">サイトを登録</h1>
+      {error && <Alert>{error}</Alert>}
       <Stepper steps={steps} current={currentStep} />
       <Routes>
         {steps.map((step) => (
@@ -137,7 +129,7 @@ const SettingPages = () => {
         ))}
         <Route path="*" element={<Navigate to={PATHS.link} replace />} />
       </Routes>
-    </div>
+    </AppShell>
   );
 };
 

@@ -1,7 +1,7 @@
 //アクセス制限設定ページ描画
 import { useId } from 'react';
 import { TIME_ZONES } from '@/constants/timeZones';
-import FormField from './FormField';
+import FormField, { inputClass, labelClass } from './FormField';
 import StepCard, { isFilled } from './StepCard';
 
 // 最後のステップ。「完了」で onSubmit（SettingPages の保存処理）が呼ばれる
@@ -35,11 +35,8 @@ const AccessRestrictions = ({ values, onChange, onSubmit, submitting }) => {
         onChange={handleChange}
       />
       {/* 同じ「12/31まで」でも、どの国の12/31かで終わる瞬間が変わる */}
-      <div className="flex flex-col gap-1">
-        <label
-          htmlFor={timeZoneId}
-          className="text-sm font-medium text-gray-700"
-        >
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor={timeZoneId} className={labelClass}>
           有効期限の基準にする時刻
         </label>
         <select
@@ -47,7 +44,7 @@ const AccessRestrictions = ({ values, onChange, onSubmit, submitting }) => {
           name="timeZone"
           value={values.timeZone}
           onChange={handleChange}
-          className="w-full rounded-lg border border-gray-300 bg-white p-2 text-sm focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-100"
+          className={inputClass}
         >
           {TIME_ZONES.map((zone) => (
             <option key={zone.value} value={zone.value}>

@@ -3,7 +3,11 @@ import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { login } from '@/api/auth';
 import { useAuth } from '@/auth/AuthContext';
+import AuthLayout from '@/components/AuthLayout';
 import FormField from '@/components/setting/FormField';
+import Alert from '@/components/ui/Alert';
+import Button, { buttonClass } from '@/components/ui/Button';
+import Card from '@/components/ui/Card';
 
 // バックエンドが返すステータスコードごとのエラーメッセージ
 const ERROR_MESSAGES = {
@@ -47,14 +51,10 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="mx-auto w-full max-w-md p-4 pt-12">
-      <form
-        onSubmit={handleSubmit}
-        noValidate
-        className="w-full rounded-xl border border-gray-200 bg-white p-6 shadow-sm"
-      >
-        <h2 className="text-lg font-bold">ログイン</h2>
-        <p className="mt-1 text-sm text-gray-500">
+    <AuthLayout>
+      <Card as="form" onSubmit={handleSubmit} noValidate>
+        <h1 className="text-2xl font-bold text-ink">ログイン</h1>
+        <p className="mt-2 text-sm text-muted">
           メールアドレスとパスワードを入力してください。
         </p>
 
@@ -78,30 +78,25 @@ const LoginPage = () => {
           />
         </div>
 
-        {error && (
-          <p role="alert" className="mt-4 text-sm text-red-600">
-            {error}
-          </p>
-        )}
+        {error && <Alert className="mt-5">{error}</Alert>}
 
-        <div className="mt-8 flex items-center justify-between">
-          <Link
-            to="/register"
-            className="text-sm font-bold text-blue-600 hover:underline"
-          >
-            新規登録はこちら
-          </Link>
-          <button
-            type="submit"
-            disabled={
-              submitting || values.email.trim() === '' || values.password === ''
-            }
-            className="rounded-lg bg-blue-600 px-6 py-2 text-sm font-bold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-300"
-          >
-            {submitting ? 'ログイン中…' : 'ログイン'}
-          </button>
-        </div>
-      </form>
+        <Button
+          type="submit"
+          className="mt-8 w-full"
+          disabled={
+            submitting || values.email.trim() === '' || values.password === ''
+          }
+        >
+          {submitting ? 'ログイン中…' : 'ログイン'}
+        </Button>
+      </Card>
+
+      <p className="mt-6 text-center text-sm text-muted">
+        アカウントをお持ちでない方は{' '}
+        <Link to="/register" className={buttonClass('link')}>
+          新規登録
+        </Link>
+      </p>
 
       {/* 開発用：バックエンドなしで設定ページを見るためのボタン（npm run dev のときだけ表示） */}
       {import.meta.env.DEV && (
@@ -111,12 +106,12 @@ const LoginPage = () => {
             auth.login('dev@example.com', null);
             navigate('/');
           }}
-          className="mt-4 w-full rounded-lg border border-dashed border-gray-400 py-2 text-sm text-gray-500 hover:bg-gray-50"
+          className="mt-6 w-full rounded-lg border border-dashed border-line py-2 text-sm text-muted hover:bg-surface"
         >
           【開発用】ログインせずに設定ページへ
         </button>
       )}
-    </div>
+    </AuthLayout>
   );
 };
 

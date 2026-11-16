@@ -1,7 +1,8 @@
 // 押すと text をクリップボードにコピーするボタン
 import { useState } from 'react';
+import Button from './ui/Button';
 
-const CopyButton = ({ text, className = '' }) => {
+const CopyButton = ({ text }) => {
   const [copied, setCopied] = useState(false);
 
   const handleClick = async () => {
@@ -14,13 +15,9 @@ const CopyButton = ({ text, className = '' }) => {
   };
 
   return (
-    <button
-      type="button"
-      onClick={handleClick}
-      className={`shrink-0 rounded px-3 py-1 text-sm font-bold text-white ${className}`}
-    >
+    <Button size="sm" onClick={handleClick}>
       {copied ? 'コピーしました' : 'コピー'}
-    </button>
+    </Button>
   );
 };
 

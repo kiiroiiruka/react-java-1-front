@@ -5,7 +5,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getPublicShare, openShare } from '@/api/publicShares';
+import AuthLayout from '@/components/AuthLayout';
 import FormField from '@/components/setting/FormField';
+import Alert from '@/components/ui/Alert';
+import Badge from '@/components/ui/Badge';
+import Button from '@/components/ui/Button';
+import Card from '@/components/ui/Card';
+import LockMark from '@/components/ui/LockMark';
 import { timeZoneLabel } from '@/constants/timeZones';
 
 // バックエンドが返すステータスコードごとのメッセージ
@@ -86,13 +92,18 @@ const PublicSharePage = () => {
 
   if (status === 'viewing') {
     return (
-      <div className="mx-auto flex h-screen w-full max-w-5xl flex-col gap-2 p-4">
-        <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h2 className="text-lg font-bold">{opened.title}</h2>
-          <p className="text-sm text-gray-500">
+      <div className="mx-auto flex h-screen w-full max-w-5xl flex-col gap-3 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <LockMark size={32} />
+            <h1 className="truncate text-lg font-bold text-ink">
+              {opened.title}
+            </h1>
+          </div>
+          <Badge>
             {share.expiresAt}（{timeZoneLabel(share.timeZone)}
             ）の終わりまで閲覧できます
-          </p>
+          </Badge>
         </div>
         {/* sandbox：埋め込んだサイトに許すことを絞る（このページ自体を別のURLに書き換える、などはさせない） */}
         <iframe
@@ -101,35 +112,44 @@ const PublicSharePage = () => {
           sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
           allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
           allowFullScreen
-          className="w-full flex-1 rounded-xl border border-gray-200 bg-white"
+          className="w-full flex-1 rounded-2xl border border-line bg-white"
         />
       </div>
     );
   }
 
   return (
-    <div className="mx-auto w-full max-w-md p-4 pt-12">
-      <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+    <AuthLayout>
+      <Card>
         {status === 'loading' && (
-          <h2 className="text-lg font-bold">リンクを確認しています…</h2>
+          <h1 className="text-2xl font-bold text-ink">
+            リンクを確認しています…
+          </h1>
         )}
 
         {status === 'unavailable' && (
           <>
-            <h2 className="text-lg font-bold">このリンクは開けません</h2>
-            <p role="alert" className="mt-2 text-sm text-red-600">
-              {error}
-            </p>
+            <h1 className="text-2xl font-bold text-ink">
+              このリンクは開けません
+            </h1>
+            <Alert className="mt-4">{error}</Alert>
           </>
         )}
 
         {status === 'ready' && (
           <form onSubmit={handleSubmit} noValidate>
-            <h2 className="text-lg font-bold">共有されたリンク</h2>
-            <p className="mt-1 text-sm text-gray-500">
-              {share.expiresAt}（{timeZoneLabel(share.timeZone)}
-              ）の終わりまで閲覧できます。 パスワードを入力してください。
+            <h1 className="text-2xl font-bold text-ink">
+              パスワードで保護されたリンク
+            </h1>
+            <p className="mt-2 text-sm text-muted">
+              パスワードを入力すると開けます。
             </p>
+            <div className="mt-4">
+              <Badge>
+                {share.expiresAt}（{timeZoneLabel(share.timeZone)}
+                ）の終わりまで閲覧できます
+              </Badge>
+            </div>
 
             <div className="mt-6">
               <FormField
@@ -142,25 +162,19 @@ const PublicSharePage = () => {
               />
             </div>
 
-            {error && (
-              <p role="alert" className="mt-4 text-sm text-red-600">
-                {error}
-              </p>
-            )}
+            {error && <Alert className="mt-5">{error}</Alert>}
 
-            <div className="mt-8 flex justify-end">
-              <button
-                type="submit"
-                disabled={!password || submitting}
-                className="rounded-lg bg-blue-600 px-6 py-2 text-sm font-bold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-300"
-              >
-                {submitting ? '確認中…' : '開く'}
-              </button>
-            </div>
+            <Button
+              type="submit"
+              className="mt-8 w-full"
+              disabled={!password || submitting}
+            >
+              {submitting ? '確認中…' : '開く'}
+            </Button>
           </form>
         )}
-      </div>
-    </div>
+      </Card>
+    </AuthLayout>
   );
 };
 

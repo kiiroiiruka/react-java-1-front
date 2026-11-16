@@ -1,1 +1,24 @@
 @import "tailwindcss";
+
+/* アプリ全体のデザインの元（色・フォント）
+   ここで決めた名前が bg-ink / text-body / border-line などのクラスとして使える
+   色を変えたいときは、ここを直せば全画面に反映される */
+@theme {
+  --font-sans: "Noto Sans JP", system-ui, sans-serif;
+
+  --color-canvas: #f5f4ef; /* ページの背景（少し温かみのある白） */
+  --color-surface: #fdfdfb; /* カードの背景 */
+  --color-line: #e2e5ea; /* 枠線 */
+  --color-ink: #14213d; /* 見出し・メインのボタン（紺） */
+  --color-ink-hover: #22335a;
+  --color-body: #44505f; /* 本文 */
+  --color-muted: #5f6673; /* 補足の文字 */
+  --color-accent: #1f6f5c; /* アクセント（深緑）：成功・入力中の枠 */
+  --color-accent-soft: #e4f1ec;
+  --color-danger: #b42318; /* エラー・削除 */
+  --color-danger-soft: #fdecea;
+}
+
+body {
+  @apply bg-canvas font-sans text-body antialiased;
+}

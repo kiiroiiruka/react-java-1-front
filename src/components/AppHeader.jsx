@@ -1,7 +1,10 @@
-// ログイン後のページの上部（ログイン中のメールアドレスとログアウト）
+// ログイン後のページの上部（鍵のマーク・ログイン中のメールアドレス・ログアウト）
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { fetchMe } from '@/api/auth';
 import { useAuth } from '@/auth/AuthContext';
+import Button from './ui/Button';
+import LockMark from './ui/LockMark';
 
 const AppHeader = () => {
   const auth = useAuth();
@@ -17,16 +20,21 @@ const AppHeader = () => {
   }, []);
 
   return (
-    <div className="flex items-center justify-end gap-3 text-sm">
-      <span className="truncate text-gray-500">{me?.email ?? auth.email}</span>
-      <button
-        type="button"
-        onClick={auth.logout}
-        className="shrink-0 font-bold text-blue-600 hover:underline"
-      >
-        ログアウト
-      </button>
-    </div>
+    <header className="border-b border-line bg-surface">
+      <div className="mx-auto flex w-full max-w-2xl items-center justify-between gap-4 px-4 py-3">
+        <Link to="/" aria-label="ホームへ">
+          <LockMark size={36} />
+        </Link>
+        <div className="flex min-w-0 items-center gap-4">
+          <span className="truncate text-sm text-muted">
+            {me?.email ?? auth.email}
+          </span>
+          <Button variant="secondary" size="sm" onClick={auth.logout}>
+            ログアウト
+          </Button>
+        </div>
+      </div>
+    </header>
   );
 };
 

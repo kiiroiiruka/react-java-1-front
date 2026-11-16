@@ -3,8 +3,12 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate, useLocation } from 'react-router-dom';
 import { deleteShare, listShares, shareUrlOf } from '@/api/shares';
-import AppHeader from '@/components/AppHeader';
+import AppShell from '@/components/AppShell';
 import CopyButton from '@/components/CopyButton';
+import Alert from '@/components/ui/Alert';
+import Badge from '@/components/ui/Badge';
+import Button, { buttonClass } from '@/components/ui/Button';
+import Card from '@/components/ui/Card';
 import { timeZoneLabel } from '@/constants/timeZones';
 
 const HomePage = () => {
@@ -49,24 +53,22 @@ const HomePage = () => {
   if (shares?.length === 0) return <Navigate to="/new" replace />;
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col gap-6 p-4 pt-12">
-      <AppHeader />
-
+    <AppShell>
       {/* 追加ボタンは、1件以上あると分かってから出す（0件ならこのあと登録画面へ移動するため） */}
       {shares?.length > 0 && (
-        <div className="flex items-center justify-between gap-3">
-          <h1 className="text-xl font-bold">登録したサイト</h1>
-          <Link
-            to="/new"
-            className="shrink-0 rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-blue-700"
-          >
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-ink">登録したサイト</h1>
+            <p className="mt-1 text-sm text-muted">{shares.length}件</p>
+          </div>
+          <Link to="/new" className={buttonClass('primary')}>
             ＋ 新しいサイトを追加
           </Link>
         </div>
       )}
 
       {created && (
-        <div className="rounded-lg bg-green-50 p-3 text-sm text-green-700">
+        <Alert tone="success">
           <p>
             「{created.title}」を登録しました。下のURLを相手に送ってください。
           </p>
@@ -75,90 +77,73 @@ const HomePage = () => {
               ※このサイトは埋め込み表示が禁止されているため、相手はパスワード入力後にサイトへ移動します（期限が過ぎても、サイトのURLを知っていれば開けます）。
             </p>
           )}
-        </div>
+        </Alert>
       )}
 
-      {error && (
-        <p
-          role="alert"
-          className="rounded-lg bg-red-50 p-3 text-sm text-red-700"
-        >
-          {error}
-        </p>
-      )}
+      {error && <Alert>{error}</Alert>}
 
       {shares === null && !error && (
-        <p className="text-sm text-gray-500">読み込み中…</p>
+        <p className="text-sm text-muted">読み込み中…</p>
       )}
 
       {shares && (
         <ul className="flex flex-col gap-4">
           {shares.map((share) => (
-            <li
-              key={share.id}
-              className={`rounded-xl border bg-white p-4 shadow-sm ${
-                created?.id === share.id
-                  ? 'border-green-400'
-                  : 'border-gray-200'
-              }`}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <h2 className="truncate font-bold">{share.title}</h2>
-                  <a
-                    href={share.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block truncate text-sm text-blue-600 hover:underline"
+            <li key={share.id}>
+              <Card
+                className={`sm:p-6 ${created?.id === share.id ? 'border-accent ring-4 ring-accent/10' : ''}`}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <h2 className="truncate text-lg font-bold text-ink">
+                      {share.title}
+                    </h2>
+                    <a
+                      href={share.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-0.5 block truncate text-sm text-muted hover:text-accent hover:underline"
+                    >
+                      {share.url}
+                    </a>
+                  </div>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={() => handleDelete(share)}
+                    disabled={deletingId === share.id}
                   >
-                    {share.url}
-                  </a>
+                    {deletingId === share.id ? '削除中…' : '削除'}
+                  </Button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => handleDelete(share)}
-                  disabled={deletingId === share.id}
-                  className="shrink-0 rounded-lg border border-red-200 px-3 py-1 text-sm font-bold text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
-                >
-                  {deletingId === share.id ? '削除中…' : '削除'}
-                </button>
-              </div>
 
-              <div className="mt-3 flex flex-wrap gap-2 text-xs">
-                <span
-                  className={`rounded-full px-2 py-0.5 ${
-                    share.expired
-                      ? 'bg-red-100 text-red-700'
-                      : 'bg-gray-100 text-gray-600'
-                  }`}
-                >
-                  {share.expired
-                    ? '期限切れ'
-                    : `${share.expiresAt}まで（${timeZoneLabel(share.timeZone)}）`}
-                </span>
-                <span className="rounded-full bg-gray-100 px-2 py-0.5 text-gray-600">
-                  {share.embeddable ? 'ページ内に表示' : 'サイトへ移動'}
-                </span>
-              </div>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Badge tone={share.expired ? 'danger' : 'neutral'}>
+                    {share.expired
+                      ? '期限切れ'
+                      : `${share.expiresAt}まで（${timeZoneLabel(share.timeZone)}）`}
+                  </Badge>
+                  <Badge tone={share.embeddable ? 'accent' : 'neutral'}>
+                    {share.embeddable ? 'ページ内に表示' : 'サイトへ移動'}
+                  </Badge>
+                </div>
 
-              <div className="mt-3 flex gap-2">
-                <input
-                  readOnly
-                  value={shareUrlOf(share.slug)}
-                  onFocus={(e) => e.target.select()}
-                  aria-label="共有URL"
-                  className="min-w-0 flex-1 rounded border border-gray-200 bg-gray-50 p-1 text-sm text-gray-700"
-                />
-                <CopyButton
-                  text={shareUrlOf(share.slug)}
-                  className="bg-blue-600 hover:bg-blue-700"
-                />
-              </div>
+                <div className="mt-4 flex gap-2 border-t border-line pt-4">
+                  <input
+                    readOnly
+                    value={shareUrlOf(share.slug)}
+                    onFocus={(e) => e.target.select()}
+                    aria-label="共有URL"
+                    className="min-w-0 flex-1 rounded-lg border border-line bg-canvas px-3 py-1.5 text-sm text-body"
+                  />
+                  <CopyButton text={shareUrlOf(share.slug)} />
+                </div>
+              </Card>
             </li>
           ))}
         </ul>
       )}
-    </div>
+    </AppShell>
   );
 };
 

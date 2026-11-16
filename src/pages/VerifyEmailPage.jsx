@@ -2,6 +2,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { verifyEmail } from '@/api/auth';
+import AuthLayout from '@/components/AuthLayout';
+import Alert from '@/components/ui/Alert';
+import { buttonClass } from '@/components/ui/Button';
+import Card from '@/components/ui/Card';
 
 // バックエンドが返すステータスコードごとのエラーメッセージ
 const ERROR_MESSAGES = {
@@ -33,12 +37,12 @@ const VerifyEmailPage = () => {
   }, [token]);
 
   return (
-    <div className="mx-auto w-full max-w-md p-4 pt-12">
-      <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+    <AuthLayout>
+      <Card>
         {status === 'verifying' && (
           <>
-            <h2 className="text-lg font-bold">確認しています…</h2>
-            <p className="mt-2 text-sm text-gray-500">
+            <h1 className="text-2xl font-bold text-ink">確認しています…</h1>
+            <p className="mt-2 text-sm text-muted">
               そのまましばらくお待ちください。
             </p>
           </>
@@ -46,41 +50,36 @@ const VerifyEmailPage = () => {
 
         {status === 'success' && (
           <>
-            <h2 className="text-lg font-bold">
+            <h1 className="text-2xl font-bold text-ink">
               メールアドレスの確認が完了しました
-            </h2>
-            <p className="mt-2 text-sm text-gray-500">
+            </h1>
+            <p className="mt-2 text-sm text-muted">
               登録が完了しました。ログインしてサービスを利用できます。
             </p>
-            <div className="mt-8 flex justify-end">
-              <Link
-                to="/login"
-                className="rounded-lg bg-blue-600 px-6 py-2 text-sm font-bold text-white transition-colors hover:bg-blue-700"
-              >
-                ログインへ
-              </Link>
-            </div>
+            <Link
+              to="/login"
+              className={`mt-8 w-full ${buttonClass('primary')}`}
+            >
+              ログインへ
+            </Link>
           </>
         )}
 
         {status === 'error' && (
           <>
-            <h2 className="text-lg font-bold">確認できませんでした</h2>
-            <p role="alert" className="mt-2 text-sm text-red-600">
-              {error}
-            </p>
-            <div className="mt-8 flex justify-end">
-              <Link
-                to="/register"
-                className="text-sm font-bold text-blue-600 hover:underline"
-              >
+            <h1 className="text-2xl font-bold text-ink">
+              確認できませんでした
+            </h1>
+            <Alert className="mt-4">{error}</Alert>
+            <div className="mt-8 border-t border-line pt-5">
+              <Link to="/register" className={buttonClass('link')}>
                 登録画面に戻る
               </Link>
             </div>
           </>
         )}
-      </div>
-    </div>
+      </Card>
+    </AuthLayout>
   );
 };
 
