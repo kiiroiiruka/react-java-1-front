@@ -7,6 +7,7 @@ import FormField from '@/components/setting/FormField';
 import Alert from '@/components/ui/Alert';
 import Button, { buttonClass } from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
+import PageTitle from '@/components/ui/PageTitle';
 
 const MIN_PASSWORD_LENGTH = 8;
 
@@ -67,9 +68,7 @@ const RegisterPage = () => {
     return (
       <AuthLayout>
         <Card>
-          <h1 className="text-2xl font-bold text-ink">
-            確認メールを送信しました
-          </h1>
+          <PageTitle>確認メールを送信しました</PageTitle>
           <p className="mt-4 text-sm leading-relaxed">
             <span className="font-bold break-all text-ink">
               {registeredEmail}
@@ -92,10 +91,9 @@ const RegisterPage = () => {
   return (
     <AuthLayout>
       <Card as="form" onSubmit={handleSubmit} noValidate>
-        <h1 className="text-2xl font-bold text-ink">新規登録</h1>
-        <p className="mt-2 text-sm text-muted">
-          メールアドレスとパスワードを入力してください。
-        </p>
+        <PageTitle description="メールアドレスとパスワードを入力してください。">
+          新規登録
+        </PageTitle>
 
         <div className="mt-6 flex flex-col gap-4">
           <FormField
@@ -130,7 +128,8 @@ const RegisterPage = () => {
         <Button
           type="submit"
           className="mt-8 w-full"
-          disabled={submitting || values.email.trim() === ''}
+          disabled={values.email.trim() === ''}
+          loading={submitting}
         >
           {submitting ? '登録中…' : '登録する'}
         </Button>

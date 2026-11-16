@@ -2,6 +2,7 @@
 const TONES = {
   neutral: 'bg-canvas text-muted',
   accent: 'bg-accent-soft text-accent',
+  warn: 'bg-warn-soft text-warn',
   danger: 'bg-danger-soft text-danger',
 };
 

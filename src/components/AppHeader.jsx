@@ -20,7 +20,8 @@ const AppHeader = () => {
   }, []);
 
   return (
-    <header className="border-b border-line bg-surface">
+    // sticky：スクロールしても上に残る。backdrop-blur：後ろが透けてぼやける（すりガラス風）
+    <header className="sticky top-0 z-20 border-b border-line bg-surface/80 backdrop-blur-md">
       <div className="mx-auto flex w-full max-w-2xl items-center justify-between gap-4 px-4 py-3">
         <Link to="/" aria-label="ホームへ">
           <LockMark size={36} />

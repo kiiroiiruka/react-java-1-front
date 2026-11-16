@@ -13,6 +13,7 @@ import { createShare, listShares } from '@/api/shares';
 import AppShell from '@/components/AppShell';
 import Alert from '@/components/ui/Alert';
 import { buttonClass } from '@/components/ui/Button';
+import PageTitle from '@/components/ui/PageTitle';
 import { DEFAULT_TIME_ZONE } from '@/constants/timeZones';
 import Stepper from '../components/Stepper';
 import AccessRestrictions from '../components/setting/AccessRestrictions';
@@ -116,7 +117,7 @@ const SettingPages = () => {
           ← 一覧に戻る
         </Link>
       )}
-      <h1 className="text-2xl font-bold text-ink">サイトを登録</h1>
+      <PageTitle>サイトを登録</PageTitle>
       {error && <Alert>{error}</Alert>}
       <Stepper steps={steps} current={currentStep} />
       <Routes>

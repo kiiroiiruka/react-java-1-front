@@ -7,7 +7,7 @@ const TONES = {
 const Alert = ({ tone = 'error', className = '', children }) => (
   <div
     role={tone === 'error' ? 'alert' : 'status'}
-    className={`rounded-lg border px-4 py-3 text-sm leading-relaxed ${TONES[tone]} ${className}`}
+    className={`animate-fade-up rounded-lg border px-4 py-3 text-sm leading-relaxed ${TONES[tone]} ${className}`}
   >
     {children}
   </div>

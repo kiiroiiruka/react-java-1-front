@@ -6,6 +6,8 @@ import AuthLayout from '@/components/AuthLayout';
 import Alert from '@/components/ui/Alert';
 import { buttonClass } from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
+import PageTitle from '@/components/ui/PageTitle';
+import Spinner from '@/components/ui/Spinner';
 
 // バックエンドが返すステータスコードごとのエラーメッセージ
 const ERROR_MESSAGES = {
@@ -40,22 +42,19 @@ const VerifyEmailPage = () => {
     <AuthLayout>
       <Card>
         {status === 'verifying' && (
-          <>
-            <h1 className="text-2xl font-bold text-ink">確認しています…</h1>
-            <p className="mt-2 text-sm text-muted">
-              そのまましばらくお待ちください。
-            </p>
-          </>
+          <div className="flex flex-col items-center gap-4 py-6 text-center text-ink">
+            <Spinner size={28} />
+            <PageTitle description="そのまましばらくお待ちください。">
+              確認しています…
+            </PageTitle>
+          </div>
         )}
 
         {status === 'success' && (
           <>
-            <h1 className="text-2xl font-bold text-ink">
+            <PageTitle description="登録が完了しました。ログインしてサービスを利用できます。">
               メールアドレスの確認が完了しました
-            </h1>
-            <p className="mt-2 text-sm text-muted">
-              登録が完了しました。ログインしてサービスを利用できます。
-            </p>
+            </PageTitle>
             <Link
               to="/login"
               className={`mt-8 w-full ${buttonClass('primary')}`}
@@ -67,9 +66,7 @@ const VerifyEmailPage = () => {
 
         {status === 'error' && (
           <>
-            <h1 className="text-2xl font-bold text-ink">
-              確認できませんでした
-            </h1>
+            <PageTitle>確認できませんでした</PageTitle>
             <Alert className="mt-4">{error}</Alert>
             <div className="mt-8 border-t border-line pt-5">
               <Link to="/register" className={buttonClass('link')}>

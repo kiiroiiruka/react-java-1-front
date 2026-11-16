@@ -2,16 +2,19 @@
 // パスワードが合って、有効期限内なら、共有されたWebサイトを表示する
 //   埋め込めるサイト：このページの中に iframe で表示し、期限が来たら消す
 //   埋め込めないサイト：そのサイトへ移動する
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getPublicShare, openShare } from '@/api/publicShares';
 import AuthLayout from '@/components/AuthLayout';
+import RemainingTime from '@/components/RemainingTime';
 import FormField from '@/components/setting/FormField';
 import Alert from '@/components/ui/Alert';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import LockMark from '@/components/ui/LockMark';
+import PageTitle from '@/components/ui/PageTitle';
+import Spinner from '@/components/ui/Spinner';
 import { timeZoneLabel } from '@/constants/timeZones';
 
 // バックエンドが返すステータスコードごとのメッセージ
@@ -51,20 +54,14 @@ const PublicSharePage = () => {
       });
   }, [slug]);
 
-  // 埋め込み表示中は、期限の瞬間（closesAt）を過ぎたら iframe を消す
-  // （ページを開きっぱなしでも見られなくなるように、10秒ごとに時計を確認する）
-  useEffect(() => {
-    if (status !== 'viewing') return;
-    const closesAt = new Date(opened.closesAt).getTime();
-    const timer = setInterval(() => {
-      if (Date.now() >= closesAt) {
-        setOpened(null);
-        setError(ERROR_MESSAGES[410]);
-        setStatus('unavailable');
-      }
-    }, 10_000);
-    return () => clearInterval(timer);
-  }, [status, opened]);
+  // 期限の瞬間（closesAt）を過ぎたら iframe を消す
+  // RemainingTime が1秒ごとに残り時間を数えていて、0になったらこれを呼ぶ
+  // （ページを開きっぱなしでも見られなくなる）
+  const handleExpire = useCallback(() => {
+    setOpened(null);
+    setError(ERROR_MESSAGES[410]);
+    setStatus('unavailable');
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -92,7 +89,7 @@ const PublicSharePage = () => {
 
   if (status === 'viewing') {
     return (
-      <div className="mx-auto flex h-screen w-full max-w-5xl flex-col gap-3 p-4">
+      <div className="mx-auto flex h-screen w-full max-w-5xl animate-fade-up flex-col gap-3 p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <LockMark size={32} />
@@ -102,7 +99,7 @@ const PublicSharePage = () => {
           </div>
           <Badge>
             {share.expiresAt}（{timeZoneLabel(share.timeZone)}
-            ）の終わりまで閲覧できます
+            ）の終わりまで
           </Badge>
         </div>
         {/* sandbox：埋め込んだサイトに許すことを絞る（このページ自体を別のURLに書き換える、などはさせない） */}
@@ -112,7 +109,13 @@ const PublicSharePage = () => {
           sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
           allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
           allowFullScreen
-          className="w-full flex-1 rounded-2xl border border-line bg-white"
+          className="w-full flex-1 rounded-2xl border border-line bg-white shadow-sm"
+        />
+        {/* 画面の右下に「残り○時間で閲覧できなくなります」を浮かべる */}
+        <RemainingTime
+          closesAt={opened.closesAt}
+          variant="floating"
+          onExpire={handleExpire}
         />
       </div>
     );
@@ -122,33 +125,30 @@ const PublicSharePage = () => {
     <AuthLayout>
       <Card>
         {status === 'loading' && (
-          <h1 className="text-2xl font-bold text-ink">
-            リンクを確認しています…
-          </h1>
+          <div className="flex flex-col items-center gap-4 py-6 text-ink">
+            <Spinner size={28} />
+            <p className="text-sm text-muted">リンクを確認しています…</p>
+          </div>
         )}
 
         {status === 'unavailable' && (
           <>
-            <h1 className="text-2xl font-bold text-ink">
-              このリンクは開けません
-            </h1>
+            <PageTitle>このリンクは開けません</PageTitle>
             <Alert className="mt-4">{error}</Alert>
           </>
         )}
 
         {status === 'ready' && (
           <form onSubmit={handleSubmit} noValidate>
-            <h1 className="text-2xl font-bold text-ink">
+            <PageTitle description="パスワードを入力すると開けます。">
               パスワードで保護されたリンク
-            </h1>
-            <p className="mt-2 text-sm text-muted">
-              パスワードを入力すると開けます。
-            </p>
-            <div className="mt-4">
+            </PageTitle>
+            <div className="mt-4 flex flex-wrap gap-2">
               <Badge>
                 {share.expiresAt}（{timeZoneLabel(share.timeZone)}
-                ）の終わりまで閲覧できます
+                ）の終わりまで
               </Badge>
+              {share.closesAt && <RemainingTime closesAt={share.closesAt} />}
             </div>
 
             <div className="mt-6">
@@ -167,7 +167,8 @@ const PublicSharePage = () => {
             <Button
               type="submit"
               className="mt-8 w-full"
-              disabled={!password || submitting}
+              disabled={!password}
+              loading={submitting}
             >
               {submitting ? '確認中…' : '開く'}
             </Button>

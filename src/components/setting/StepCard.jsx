@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
+import PageTitle from '../ui/PageTitle';
 
 // 入力値がすべて埋まっているか（空白だけもNG）
 export const isFilled = (values) =>
@@ -28,14 +29,16 @@ const StepCard = ({
   };
 
   return (
-    <Card as="form" onSubmit={handleSubmit}>
-      <h2 className="text-xl font-bold text-ink">{title}</h2>
-      {description && <p className="mt-2 text-sm text-muted">{description}</p>}
+    // ステップが切り替わるたびにこのカードが作り直されるので、毎回ふわっと出てくる
+    <Card as="form" onSubmit={handleSubmit} className="animate-fade-up">
+      <PageTitle as="h2" description={description}>
+        {title}
+      </PageTitle>
 
       <div className="mt-6 flex flex-col gap-5">{children}</div>
 
       <div className="mt-8 flex justify-end">
-        <Button type="submit" disabled={!canNext || submitting}>
+        <Button type="submit" disabled={!canNext} loading={submitting}>
           {submitting ? '保存中…' : nextLabel}
         </Button>
       </div>

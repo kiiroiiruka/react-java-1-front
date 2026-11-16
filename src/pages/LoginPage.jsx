@@ -8,6 +8,7 @@ import FormField from '@/components/setting/FormField';
 import Alert from '@/components/ui/Alert';
 import Button, { buttonClass } from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
+import PageTitle from '@/components/ui/PageTitle';
 
 // バックエンドが返すステータスコードごとのエラーメッセージ
 const ERROR_MESSAGES = {
@@ -53,10 +54,9 @@ const LoginPage = () => {
   return (
     <AuthLayout>
       <Card as="form" onSubmit={handleSubmit} noValidate>
-        <h1 className="text-2xl font-bold text-ink">ログイン</h1>
-        <p className="mt-2 text-sm text-muted">
-          メールアドレスとパスワードを入力してください。
-        </p>
+        <PageTitle description="メールアドレスとパスワードを入力してください。">
+          ログイン
+        </PageTitle>
 
         <div className="mt-6 flex flex-col gap-4">
           <FormField
@@ -83,9 +83,8 @@ const LoginPage = () => {
         <Button
           type="submit"
           className="mt-8 w-full"
-          disabled={
-            submitting || values.email.trim() === '' || values.password === ''
-          }
+          disabled={values.email.trim() === '' || values.password === ''}
+          loading={submitting}
         >
           {submitting ? 'ログイン中…' : 'ログイン'}
         </Button>

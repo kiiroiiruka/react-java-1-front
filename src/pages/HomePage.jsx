@@ -5,10 +5,13 @@ import { Link, Navigate, useLocation } from 'react-router-dom';
 import { deleteShare, listShares, shareUrlOf } from '@/api/shares';
 import AppShell from '@/components/AppShell';
 import CopyButton from '@/components/CopyButton';
+import RemainingTime from '@/components/RemainingTime';
 import Alert from '@/components/ui/Alert';
 import Badge from '@/components/ui/Badge';
 import Button, { buttonClass } from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
+import PageTitle from '@/components/ui/PageTitle';
+import Skeleton from '@/components/ui/Skeleton';
 import { timeZoneLabel } from '@/constants/timeZones';
 
 const HomePage = () => {
@@ -57,10 +60,9 @@ const HomePage = () => {
       {/* 追加ボタンは、1件以上あると分かってから出す（0件ならこのあと登録画面へ移動するため） */}
       {shares?.length > 0 && (
         <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-ink">登録したサイト</h1>
-            <p className="mt-1 text-sm text-muted">{shares.length}件</p>
-          </div>
+          <PageTitle description={`${shares.length}件`}>
+            登録したサイト
+          </PageTitle>
           <Link to="/new" className={buttonClass('primary')}>
             ＋ 新しいサイトを追加
           </Link>
@@ -82,16 +84,40 @@ const HomePage = () => {
 
       {error && <Alert>{error}</Alert>}
 
+      {/* 読み込み中は、カードの形をした「仮の箱」を出しておく（中身が来たら差し替わる） */}
       {shares === null && !error && (
-        <p className="text-sm text-muted">読み込み中…</p>
+        <div
+          role="status"
+          aria-label="読み込み中"
+          className="flex flex-col gap-4"
+        >
+          <Skeleton className="h-8 w-48" />
+          {[0, 1].map((i) => (
+            <Card key={i} padding="sm">
+              <Skeleton className="h-6 w-1/2" />
+              <Skeleton className="mt-2 h-4 w-3/4" />
+              <div className="mt-4 flex gap-2">
+                <Skeleton className="h-5 w-28 rounded-full" />
+                <Skeleton className="h-5 w-24 rounded-full" />
+              </div>
+              <Skeleton className="mt-4 h-9 w-full" />
+            </Card>
+          ))}
+        </div>
       )}
 
       {shares && (
         <ul className="flex flex-col gap-4">
-          {shares.map((share) => (
-            <li key={share.id}>
+          {shares.map((share, index) => (
+            // 上から順番に、少しずつ遅れてふわっと出てくる
+            <li
+              key={share.id}
+              className="animate-fade-up"
+              style={{ animationDelay: `${index * 70}ms` }}
+            >
               <Card
-                className={`sm:p-6 ${created?.id === share.id ? 'border-accent ring-4 ring-accent/10' : ''}`}
+                padding="sm"
+                className={`transition-shadow duration-200 hover:shadow-md ${created?.id === share.id ? 'border-accent ring-4 ring-accent/10' : ''}`}
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0">
@@ -111,7 +137,7 @@ const HomePage = () => {
                     variant="danger"
                     size="sm"
                     onClick={() => handleDelete(share)}
-                    disabled={deletingId === share.id}
+                    loading={deletingId === share.id}
                   >
                     {deletingId === share.id ? '削除中…' : '削除'}
                   </Button>
@@ -123,6 +149,9 @@ const HomePage = () => {
                       ? '期限切れ'
                       : `${share.expiresAt}まで（${timeZoneLabel(share.timeZone)}）`}
                   </Badge>
+                  {!share.expired && share.closesAt && (
+                    <RemainingTime closesAt={share.closesAt} />
+                  )}
                   <Badge tone={share.embeddable ? 'accent' : 'neutral'}>
                     {share.embeddable ? 'ページ内に表示' : 'サイトへ移動'}
                   </Badge>
@@ -134,7 +163,7 @@ const HomePage = () => {
                     value={shareUrlOf(share.slug)}
                     onFocus={(e) => e.target.select()}
                     aria-label="共有URL"
-                    className="min-w-0 flex-1 rounded-lg border border-line bg-canvas px-3 py-1.5 text-sm text-body"
+                    className="min-w-0 flex-1 rounded-lg border border-line bg-canvas px-3 py-1.5 text-sm text-body focus:border-accent focus:outline-none"
                   />
                   <CopyButton text={shareUrlOf(share.slug)} />
                 </div>
