@@ -28,7 +28,7 @@ const PublicSharePage = () => {
   const { slug } = useParams();
   // 'loading'（確認中） / 'ready'（パスワード入力） / 'viewing'（埋め込み表示中） / 'unavailable'（開けない）
   const [status, setStatus] = useState('loading');
-  const [share, setShare] = useState(null); // { expiresAt, timeZone }
+  const [share, setShare] = useState(null); // { passwordRequired, expiresAt, timeZone, closesAt }
   const [opened, setOpened] = useState(null); // { embedUrl, title, closesAt }
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -97,10 +97,12 @@ const PublicSharePage = () => {
               {opened.title}
             </h1>
           </div>
-          <Badge>
-            {share.expiresAt}（{timeZoneLabel(share.timeZone)}
-            ）の終わりまで
-          </Badge>
+          {share.expiresAt && (
+            <Badge>
+              {share.expiresAt}（{timeZoneLabel(share.timeZone)}
+              ）の終わりまで
+            </Badge>
+          )}
         </div>
         {/* sandbox：埋め込んだサイトに許すことを絞る（このページ自体を別のURLに書き換える、などはさせない） */}
         <iframe
@@ -111,12 +113,14 @@ const PublicSharePage = () => {
           allowFullScreen
           className="w-full flex-1 rounded-2xl border border-line bg-white shadow-sm"
         />
-        {/* 画面の右下に「残り○時間で閲覧できなくなります」を浮かべる */}
-        <RemainingTime
-          closesAt={opened.closesAt}
-          variant="floating"
-          onExpire={handleExpire}
-        />
+        {/* 画面の右下に「残り○時間で閲覧できなくなります」を浮かべる（期限なしのリンクでは出さない） */}
+        {opened.closesAt && (
+          <RemainingTime
+            closesAt={opened.closesAt}
+            variant="floating"
+            onExpire={handleExpire}
+          />
+        )}
       </div>
     );
   }
@@ -140,34 +144,45 @@ const PublicSharePage = () => {
 
         {status === 'ready' && (
           <form onSubmit={handleSubmit} noValidate>
-            <PageTitle description="パスワードを入力すると開けます。">
-              パスワードで保護されたリンク
-            </PageTitle>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <Badge>
-                {share.expiresAt}（{timeZoneLabel(share.timeZone)}
-                ）の終わりまで
-              </Badge>
-              {share.closesAt && <RemainingTime closesAt={share.closesAt} />}
-            </div>
+            {share.passwordRequired ? (
+              <PageTitle description="パスワードを入力すると開けます。">
+                パスワードで保護されたリンク
+              </PageTitle>
+            ) : (
+              <PageTitle description="期限内なら、下のボタンから開けます。">
+                期限付きのリンク
+              </PageTitle>
+            )}
+            {share.expiresAt && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Badge>
+                  {share.expiresAt}（{timeZoneLabel(share.timeZone)}
+                  ）の終わりまで
+                </Badge>
+                {share.closesAt && <RemainingTime closesAt={share.closesAt} />}
+              </div>
+            )}
 
-            <div className="mt-6">
-              <FormField
-                label="パスワード"
-                type="password"
-                name="password"
-                autoComplete="off"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
+            {/* パスワードなしのリンクでは入力欄を出さない */}
+            {share.passwordRequired && (
+              <div className="mt-6">
+                <FormField
+                  label="パスワード"
+                  type="password"
+                  name="password"
+                  autoComplete="off"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+            )}
 
             {error && <Alert className="mt-5">{error}</Alert>}
 
             <Button
               type="submit"
               className="mt-8 w-full"
-              disabled={!password}
+              disabled={share.passwordRequired && !password}
               loading={submitting}
             >
               {submitting ? '確認中…' : '開く'}

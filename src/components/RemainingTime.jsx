@@ -65,7 +65,8 @@ const RemainingTime = ({ closesAt, variant = 'badge', onExpire }) => {
   }, []);
 
   const remaining = closesAtMs - now;
-  const expired = remaining <= 0;
+  // closesAt がない（期限なし）ときは、期限切れ扱いにしない
+  const expired = Boolean(closesAt) && remaining <= 0;
 
   // 期限の瞬間を過ぎたら、親（公開ページなど）に知らせる
   useEffect(() => {

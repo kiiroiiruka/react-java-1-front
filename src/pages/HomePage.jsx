@@ -147,7 +147,12 @@ const HomePage = () => {
                   <Badge tone={share.expired ? 'danger' : 'neutral'}>
                     {share.expired
                       ? '期限切れ'
-                      : `${share.expiresAt}まで（${timeZoneLabel(share.timeZone)}）`}
+                      : share.expiresAt
+                        ? `${share.expiresAt}まで（${timeZoneLabel(share.timeZone)}）`
+                        : '期限なし'}
+                  </Badge>
+                  <Badge>
+                    {share.passwordProtected ? 'パスワードあり' : 'パスワードなし'}
                   </Badge>
                   {!share.expired && share.closesAt && (
                     <RemainingTime closesAt={share.closesAt} />

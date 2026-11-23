@@ -2,7 +2,7 @@
 import { useId } from 'react';
 import { TIME_ZONES } from '@/constants/timeZones';
 import FormField, { inputClass, labelClass } from './FormField';
-import StepCard, { isFilled } from './StepCard';
+import StepCard from './StepCard';
 
 // 最後のステップ。「完了」で onSubmit（SettingPages の保存処理）が呼ばれる
 const AccessRestrictions = ({ values, onChange, onSubmit, submitting }) => {
@@ -10,17 +10,21 @@ const AccessRestrictions = ({ values, onChange, onSubmit, submitting }) => {
   const handleChange = (e) =>
     onChange({ ...values, [e.target.name]: e.target.value });
 
+  // パスワードと有効期限は、どちらか片方だけでもOK（両方空のときだけ「完了」を押せない）
+  const hasPassword = values.password.trim() !== '';
+  const hasExpiry = values.expiresAt !== '';
+
   return (
     <StepCard
       title="アクセス制限"
-      description="リンクを開くためのパスワードと有効期限を設定してください。"
-      canNext={isFilled(values)}
+      description="パスワードと有効期限のどちらか（または両方）を設定してください。空欄にした方は制限なしになります。"
+      canNext={hasPassword || hasExpiry}
       nextLabel="完了"
       onSubmit={onSubmit}
       submitting={submitting}
     >
       <FormField
-        label="パスワード"
+        label="パスワード（任意・4文字以上）"
         type="password"
         name="password"
         autoComplete="new-password"
@@ -28,7 +32,7 @@ const AccessRestrictions = ({ values, onChange, onSubmit, submitting }) => {
         onChange={handleChange}
       />
       <FormField
-        label="有効期限（この日の終わりまで閲覧できます）"
+        label="有効期限（任意・この日の終わりまで閲覧できます）"
         type="date"
         name="expiresAt"
         value={values.expiresAt}
@@ -44,7 +48,9 @@ const AccessRestrictions = ({ values, onChange, onSubmit, submitting }) => {
           name="timeZone"
           value={values.timeZone}
           onChange={handleChange}
-          className={inputClass}
+          // 期限を設定しないなら、基準の時刻も関係ないので選べなくする
+          disabled={!hasExpiry}
+          className={`${inputClass} disabled:opacity-50`}
         >
           {TIME_ZONES.map((zone) => (
             <option key={zone.value} value={zone.value}>

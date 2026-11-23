@@ -65,8 +65,9 @@ const SettingPages = () => {
       const share = await createShare({
         url: form.link.url.trim(),
         title: form.link.title.trim(),
-        password: form.access.password,
-        expiresAt: form.access.expiresAt, // "2026-12-31" の形
+        // 空欄にした方は null で送る（＝その制限はなし）
+        password: form.access.password.trim() ? form.access.password : null,
+        expiresAt: form.access.expiresAt || null, // "2026-12-31" の形
         timeZone: form.access.timeZone, // "Asia/Tokyo" など
       });
       // 一覧に戻り、今作ったリンクを知らせる（HomePage が state.created を読む）
@@ -74,7 +75,7 @@ const SettingPages = () => {
     } catch (err) {
       setError(
         err.status === 400
-          ? '入力内容を確認してください（URLは http:// か https:// で始まるもの、パスワードは4文字以上、有効期限は選んだ国の今日以降）。'
+          ? '入力内容を確認してください（URLは http:// か https:// で始まるもの、パスワードか有効期限のどちらかを設定、パスワードは4文字以上、有効期限は選んだ国の今日以降）。'
           : '保存に失敗しました。時間をおいてもう一度試してください。',
       );
       setSubmitting(false);

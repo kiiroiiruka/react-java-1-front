@@ -1,0 +1,8 @@
+# Cloudflare に「ブラウザにどれくらいキャッシュさせるか」を伝えるファイル
+# （npm run build で dist/ にコピーされ、wrangler deploy のときに読まれる）
+
+# /assets/ の中身は Vite が index-B2AMaX7i.css のように「中身から作った名前」を付けている
+# 中身が変われば名前も変わるので、同じ名前のファイルは二度と変わらない
+# → ブラウザに「1年間、確認しに来なくていい」と伝えて大丈夫
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
