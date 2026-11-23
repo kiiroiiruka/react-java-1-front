@@ -17,6 +17,7 @@ import PageTitle from '@/components/ui/PageTitle';
 import { DEFAULT_TIME_ZONE } from '@/constants/timeZones';
 import Stepper from '../components/Stepper';
 import AccessRestrictions from '../components/setting/AccessRestrictions';
+import { isFilled } from '../components/setting/StepCard';
 import InputWebLink from '../components/setting/InputWebLink';
 
 // 各ステップのURL。nextPath にはこの値だけを使う
@@ -110,6 +111,12 @@ const SettingPages = () => {
 
   // 今のURLから何番目のステップかを計算
   const currentStep = steps.findIndex((step) => step.path === pathname);
+
+  // ステップ1（URL・タイトル）が空のまま /new/access に来たら、ステップ1に戻す
+  // （アクセス制限の画面でブラウザを再読み込みすると、入力値が消えて空のまま送ってしまうため）
+  if (pathname === PATHS.access && !isFilled(form.link)) {
+    return <Navigate to={PATHS.link} replace />;
+  }
 
   return (
     <AppShell>
